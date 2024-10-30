@@ -8,100 +8,112 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
+            margin: 20px;
         }
         table {
             width: 100%;
-            margin-bottom: 20px;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
         }
         th {
-            background-color: #f2f2f2;
-            text-align: left;
+            background-color: #f4f4f4;
         }
         input[type="number"] {
             width: 100%;
-            padding: 5px;
+            padding: 4px;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
-    <h2>Technical Stop Loss</h2>
-    <table>
-        <tr>
-            <th>Entry Price</th>
-            <td><input type="number" id="techEntry" step="0.01"></td>
-        </tr>
-        <tr>
-            <th>Opposite Level</th>
-            <td><input type="number" id="techOpposite" step="0.01"></td>
-        </tr>
-        <tr>
-            <th>Technical Stop Loss</th>
-            <td><span id="techStopLoss">-</span></td>
-        </tr>
-    </table>
+<h2>Technical Stop Loss</h2>
+<table>
+    <tr>
+        <th>Entry Price</th>
+        <th>Opposite Level</th>
+        <th>Technical Stop Loss</th>
+    </tr>
+    <tr>
+        <td><input type="number" id="entryPriceTech" oninput="calculateTechnicalStopLoss()"></td>
+        <td><input type="number" id="oppositeLevel" oninput="calculateTechnicalStopLoss()"></td>
+        <td><input type="text" id="technicalStopLoss" readonly></td>
+    </tr>
+</table>
 
-    <h2>Statistical Stop Loss</h2>
-    <table>
-        <tr>
-            <th>Entry Price</th>
-            <td><input type="number" id="statEntry" step="0.01"></td>
-        </tr>
-        <tr>
-            <th>Take Profit 1 (TP1)</th>
-            <td><input type="number" id="statTp1" step="0.01"></td>
-        </tr>
-        <tr>
-            <th>% Profit</th>
-            <td><span id="statProfit">-</span></td>
-        </tr>
-        <tr>
-            <th>Statistical Stop Loss</th>
-            <td><span id="statStopLoss">-</span></td>
-        </tr>
-    </table>
+<h2>Statistical Stop Loss</h2>
+<table>
+    <tr>
+        <th>Entry Price</th>
+        <th>Take Profit (TP1)</th>
+        <th>% Profit</th>
+        <th>Statistical Stop Loss</th>
+    </tr>
+    <tr>
+        <td><input type="number" id="entryPriceStat" oninput="calculateStatisticalStopLoss()"></td>
+        <td><input type="number" id="tp1" oninput="calculateStatisticalStopLoss()"></td>
+        <td><input type="text" id="percentProfit" readonly></td>
+        <td><input type="text" id="statisticalStopLoss" readonly></td>
+    </tr>
+</table>
 
-    <script>
-        function calculateTechnicalStopLoss() {
-            const entry = parseFloat(document.getElementById('techEntry').value);
-            const opposite = parseFloat(document.getElementById('techOpposite').value);
+<h2>Risk-Reward Ratio</h2>
+<table>
+    <tr>
+        <th>Entry Price</th>
+        <th>Take Profit</th>
+        <th>Stop Loss</th>
+        <th>Risk-Reward Ratio</th>
+    </tr>
+    <tr>
+        <td><input type="number" id="entryPriceRisk" oninput="calculateRiskReward()"></td>
+        <td><input type="number" id="takeProfit" oninput="calculateRiskReward()"></td>
+        <td><input type="number" id="stopLoss" oninput="calculateRiskReward()"></td>
+        <td><input type="text" id="riskRewardRatio" readonly></td>
+    </tr>
+</table>
 
-            if (!isNaN(entry) && !isNaN(opposite)) {
-                const techStopLoss = (entry + opposite) / 2;
-                document.getElementById('techStopLoss').textContent = techStopLoss.toFixed(2);
-            } else {
-                document.getElementById('techStopLoss').textContent = "-";
-            }
-        }
+<script>
+function calculateTechnicalStopLoss() {
+    const entryPriceTech = parseFloat(document.getElementById("entryPriceTech").value);
+    const oppositeLevel = parseFloat(document.getElementById("oppositeLevel").value);
+    if (!isNaN(entryPriceTech) && !isNaN(oppositeLevel)) {
+        document.getElementById("technicalStopLoss").value = ((entryPriceTech + oppositeLevel) / 2).toFixed(2);
+    } else {
+        document.getElementById("technicalStopLoss").value = '';
+    }
+}
 
-        function calculateStatisticalStopLoss() {
-            const entry = parseFloat(document.getElementById('statEntry').value);
-            const tp1 = parseFloat(document.getElementById('statTp1').value);
+function calculateStatisticalStopLoss() {
+    const entryPriceStat = parseFloat(document.getElementById("entryPriceStat").value);
+    const tp1 = parseFloat(document.getElementById("tp1").value);
+    if (!isNaN(entryPriceStat) && !isNaN(tp1) && entryPriceStat != 0) {
+        const percentProfit = ((tp1 - entryPriceStat) / entryPriceStat) * 100;
+        document.getElementById("percentProfit").value = percentProfit.toFixed(2);
+        document.getElementById("statisticalStopLoss").value = (percentProfit / -2.66).toFixed(2);
+    } else {
+        document.getElementById("percentProfit").value = '';
+        document.getElementById("statisticalStopLoss").value = '';
+    }
+}
 
-            if (!isNaN(entry) && !isNaN(tp1)) {
-                const profitPercent = ((tp1 - entry) / entry) * 100;
-                const statStopLoss = -(profitPercent / 2.66);
-                document.getElementById('statProfit').textContent = profitPercent.toFixed(2) + "%";
-                document.getElementById('statStopLoss').textContent = statStopLoss.toFixed(2) + "%";
-            } else {
-                document.getElementById('statProfit').textContent = "-";
-                document.getElementById('statStopLoss').textContent = "-";
-            }
-        }
+function calculateRiskReward() {
+    const entryPriceRisk = parseFloat(document.getElementById("entryPriceRisk").value);
+    const takeProfit = parseFloat(document.getElementById("takeProfit").value);
+    const stopLoss = parseFloat(document.getElementById("stopLoss").value);
+    if (!isNaN(entryPriceRisk) && !isNaN(takeProfit) && !isNaN(stopLoss) && stopLoss != entryPriceRisk) {
+        const reward = Math.abs(takeProfit - entryPriceRisk);
+        const risk = Math.abs(entryPriceRisk - stopLoss);
+        document.getElementById("riskRewardRatio").value = (reward / risk).toFixed(2);
+    } else {
+        document.getElementById("riskRewardRatio").value = '';
+    }
+}
+</script>
 
-        document.getElementById('techEntry').addEventListener('input', calculateTechnicalStopLoss);
-        document.getElementById('techOpposite').addEventListener('input', calculateTechnicalStopLoss);
-        document.getElementById('statEntry').addEventListener('input', calculateStatisticalStopLoss);
-        document.getElementById('statTp1').addEventListener('input', calculateStatisticalStopLoss);
-    </script>
-    
 </body>
 </html>
